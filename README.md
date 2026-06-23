@@ -18,6 +18,29 @@ Each folder has its own detailed **README** — start there to set that part up.
 
 ---
 
+## Install the browser extension (published builds)
+
+Don't want to build from source? Install the signed/published extension from your
+browser's store. (You still need a backend — see [Quick start](#quick-start) or
+the [test endpoint](#try-it-without-a-backend).)
+
+| Browser | Install from | Status |
+|---|---|---|
+| 🦊 **Firefox** | [Direct `.xpi` (AMO-signed)](https://addons.mozilla.org/firefox/downloads/file/4857735/90c021f94d354338a40c-0.2.2.xpi) | ✅ Available — v0.2.2, **auto-updates** |
+| 🔵 **Edge** | Edge Add-ons | ⏳ Pending review |
+| 🔴 **Opera** | Opera Add-ons | ⏳ Pending review |
+| 🟢 **Chrome** | Chrome Web Store | ⏳ Pending review |
+| 🐙 **GitHub Releases** | [Releases](https://github.com/Oratorian/lt-inline/releases) | Per-store `.zip`s + the signed `.xpi` — manual install, **no auto-update** |
+
+> The Firefox `.xpi` is AMO-signed and carries an update URL, so it **updates
+> itself automatically** — install it once and you're done. Store links for
+> Edge / Opera / Chrome (which also auto-update from their stores) will be added
+> here as each listing is approved. The GitHub Releases builds are for manual
+> installation and do **not** auto-update — see
+> [`lt-inline-mv3/README.md`](lt-inline-mv3/README.md).
+
+---
+
 ## How it works
 
 ```
