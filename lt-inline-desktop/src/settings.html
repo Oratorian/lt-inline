@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>LanguageTool Inline — Settings</title>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img class="logo" src="icon.png" alt="" />
+        <div>
+          <h1>LanguageTool Inline</h1>
+          <p class="subtitle" data-i18n="settings.subtitle">Desktop — local grammar &amp; AI rephrasing</p>
+        </div>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="grammar" data-i18n="settings.tab.grammar">Grammar</button>
+        <button class="tab" data-tab="rephrase" data-i18n="settings.tab.rephrase">Rephrase</button>
+      </nav>
+
+      <section id="tab-grammar" class="panel active">
+        <label for="ui_language" data-i18n="settings.uiLanguage">Interface language</label>
+        <select id="ui_language">
+          <option value="auto" data-i18n="settings.uiLanguage.auto">Automatic (system)</option>
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+        </select>
+        <div class="hint" data-i18n="settings.uiLanguage.hint">Language of this app's interface.</div>
+
+        <label for="lt_endpoint" data-i18n="settings.ltEndpoint">LanguageTool endpoint</label>
+        <input id="lt_endpoint" type="text" placeholder="https://languagetool.example.com/v2/check" />
+        <div class="hint" data-i18n="settings.ltEndpoint.hint">Full URL of the /v2/check endpoint.</div>
+
+        <label for="language" data-i18n="settings.language">Language</label>
+        <input id="language" type="text" placeholder="auto" />
+        <div class="hint" data-i18n="settings.language.hint">auto, or a code like en-US, de-DE.</div>
+
+        <label for="preferred_variants" data-i18n="settings.preferredVariants">Preferred variants</label>
+        <input id="preferred_variants" type="text" placeholder="en-US,de-DE" />
+        <div class="hint" data-i18n="settings.preferredVariants.hint">With language=auto: which variant per detected language (en-US vs en-GB, …).</div>
+
+        <label for="mother_tongue" data-i18n="settings.motherTongue">Mother tongue</label>
+        <input id="mother_tongue" type="text" placeholder="de-DE" />
+        <div class="hint" data-i18n="settings.motherTongue.hint">Your native language (e.g. de-DE). Enables false-friends warnings. Blank = off.</div>
+
+        <label for="ignored_categories" data-i18n="settings.ignored">Ignored categories</label>
+        <input id="ignored_categories" type="text" placeholder="STYLE,TYPOGRAPHY" />
+        <div class="hint" data-i18n="settings.ignored.hint">Comma-separated LanguageTool category IDs to skip.</div>
+      </section>
+
+      <section id="tab-rephrase" class="panel">
+        <label for="rewrite_endpoint" data-i18n="settings.rewriteEndpoint">Rewrite endpoint</label>
+        <input id="rewrite_endpoint" type="text" placeholder="https://languagetool.example.com/llm/v1/chat/completions" />
+        <div class="hint" data-i18n="settings.rewriteEndpoint.hint">OpenAI-compatible /v1/chat/completions URL (your llamafile behind nginx).</div>
+
+        <label for="rewrite_prompt" data-i18n="settings.prompt">System prompt</label>
+        <textarea id="rewrite_prompt" rows="5"></textarea>
+        <div class="hint" data-i18n="settings.prompt.hint">Instruction sent with every rephrase. Tune freely — no server restart needed.</div>
+
+        <label class="checkrow">
+          <input id="rephrase_variants" type="checkbox" />
+          <span data-i18n="settings.rephraseVariants">Offer multiple style options for “Rephrase”</span>
+        </label>
+        <div class="hint" data-i18n="settings.rephraseVariants.hint">When on, the plain “Rephrase” action returns several styles to pick from (like the dedicated “Rephrase — styles” action).</div>
+      </section>
+
+      <footer>
+        <button id="save" data-i18n="settings.save">Save</button>
+        <span id="status"></span>
+      </footer>
+
+      <p class="about">
+        <span data-i18n="settings.about">Free software under the AGPL-3.0.</span>
+        <a href="https://github.com/Oratorian/lt-inline" target="_blank" rel="noopener" data-i18n="settings.source">Source code</a>
+      </p>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>

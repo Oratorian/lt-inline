@@ -1,0 +1,51 @@
+# Portable LanguageTool stack (meyay/languagetool).
+#
+# This base file is self-contained: it runs on a fresh `docker compose up -d`
+# with no pre-existing network and publishes the server on localhost:8081.
+#
+# For a host with its own network topology (static IPs, an external bridge,
+# bind-mounted data dirs), put those in docker-compose.override.yml — Docker
+# Compose merges it automatically and it is gitignored. A starter override
+# (docker-compose.override.example.yml) is provided.
+services:
+  languagetool:
+    image: meyay/languagetool:latest
+    container_name: languagetool
+    restart: unless-stopped
+    # Published to the host so the clients / your nginx can reach it at
+    # http://localhost:8081 (the meyay image serves LT on 8010 internally).
+    ports:
+      - "8081:8081"
+    read_only: true
+    tmpfs:
+      - /tmp:exec
+    cap_drop:
+      - ALL
+    cap_add:
+      - CAP_CHOWN
+      - CAP_DAC_OVERRIDE
+      - CAP_SETUID
+      - CAP_SETGID
+    security_opt:
+      - no-new-privileges
+    environment:
+      download_ngrams_for_langs: en,de
+      MAP_UID: 783
+      MAP_GID: 783
+      langtool_suggestionsEnabled: true
+      langtool_languageModel: /ngrams
+      langtool_maxErrorsPerWordRate: 1
+      langtool_pipelinePrewarming: true
+      langtool_maxSpellingSuggestions: 200
+      langtool_pipelineCaching: true
+      langtool_maxPipelinePoolSize: 4000000
+      JAVA_XMX: 4g
+    volumes:
+      # Named volumes so a fresh clone works without host paths existing.
+      # Override these with bind mounts (e.g. /opt/langtool/ngrams) per host.
+      - ngrams:/ngrams
+      - fasttext:/fasttext
+
+volumes:
+  ngrams:
+  fasttext:

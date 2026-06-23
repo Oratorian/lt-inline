@@ -1,0 +1,24 @@
+# Example host-specific override. Copy to docker-compose.override.yml and edit
+# for your environment. Docker Compose auto-merges docker-compose.override.yml
+# on top of docker-compose.yml; the real one is gitignored.
+#
+# Use this when your host has its own network (e.g. an external bridge with
+# static IPs) and/or you want bind-mounted data directories instead of named
+# volumes.
+services:
+  languagetool:
+    # Example: attach to a pre-existing external network with fixed addresses.
+    networks:
+      mynet:
+        ipv4_address: 10.0.0.6
+        ipv6_address: fd02:1337:1337:1337::6
+    # If you reach the service via the network address, drop the published port:
+    ports: !reset []
+    # Bind-mount real data dirs instead of named volumes:
+    volumes:
+      - /opt/langtool/ngrams:/ngrams
+      - /opt/langtool/fasttext:/fasttext
+
+networks:
+  mynet:
+    external: true

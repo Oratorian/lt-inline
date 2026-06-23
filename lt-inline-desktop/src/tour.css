@@ -1,0 +1,106 @@
+:root {
+  --bg: #ffffff;
+  --text: #1b1b1b;
+  --muted: #555b63;
+  --accent: #137333;
+  --accent-2: #1aa05a;
+  --dot: #d0d3d8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f2125;
+    --text: #e9e9ec;
+    --muted: #a1a6af;
+    --dot: #3a3d42;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 34px 40px 26px;
+}
+
+.icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-top: 8px;
+}
+
+h1 {
+  font-size: 21px;
+  font-weight: 650;
+  margin: 18px 0 12px;
+}
+
+p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 440px;
+  flex: 1;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  transition: background 0.15s, transform 0.15s;
+}
+.dot.active {
+  background: var(--accent);
+  transform: scale(1.25);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.spacer {
+  flex: 1;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+}
+.ghost {
+  background: none;
+  color: var(--muted);
+}
+.ghost:hover {
+  color: var(--text);
+}
+.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 600;
+}
+.primary:hover {
+  filter: brightness(1.06);
+}

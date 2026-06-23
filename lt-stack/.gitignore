@@ -1,0 +1,22 @@
+# Host-specific Compose override (real network topology / IPs / bind mounts).
+# Commit docker-compose.override.example.yml instead.
+docker-compose.override.yml
+
+# Local env / secrets
+.env
+.hidden
+*.pem
+*.key
+
+# Downloaded artifacts (native install mode) — large, fetched at install time.
+LanguageTool-*/
+ngrams/
+fasttext-src/
+*.gguf
+*.llamafile
+lid.176.bin
+
+# Bundled binaries in bin/ ARE committed (e.g. the prebuilt Windows fasttext.exe).
+# The rules above don't match bin/fasttext.exe, but make the intent explicit:
+!bin/
+!bin/**

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>LanguageTool Inline — Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img class="logo" src="icon.svg" alt="" />
+        <div>
+          <h1>LanguageTool Inline</h1>
+          <p class="subtitle">Local grammar checking &amp; AI rephrasing</p>
+        </div>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="grammar">Grammar</button>
+        <button class="tab" data-tab="rephrase">Rephrase</button>
+      </nav>
+
+      <section id="tab-grammar" class="panel active">
+        <label for="endpoint">LanguageTool endpoint</label>
+        <input id="endpoint" type="text" placeholder="https://languagetool.example.com/v2/check" />
+        <div class="hint">Full URL of the <code>/v2/check</code> endpoint.</div>
+
+        <label for="language">Language</label>
+        <input id="language" type="text" placeholder="auto" />
+        <div class="hint"><code>auto</code>, or a code like <code>en-US</code>, <code>en-GB</code>, <code>de-DE</code>.</div>
+
+        <label for="preferredVariants">Preferred variants</label>
+        <input id="preferredVariants" type="text" placeholder="en-US,de-DE" />
+        <div class="hint">Used with <code>auto</code> — the variant to use per language you write in. e.g. <code>en-US</code> vs <code>en-GB</code> ("Tea Guys' English" 🫖), <code>de-DE</code> vs <code>de-AT</code>. Comma-separated.</div>
+
+        <label for="motherTongue">Mother tongue</label>
+        <input id="motherTongue" type="text" placeholder="e.g. de-DE (blank = off)" />
+        <div class="hint">Your native language — warns about “false friends” in other-language text (a word that looks familiar but means something else). Blank to disable.</div>
+
+        <label for="debounceMs">Debounce (ms)</label>
+        <input id="debounceMs" type="number" min="100" step="50" />
+        <div class="hint">Delay after you stop typing before checking.</div>
+
+        <label for="minLength">Minimum length</label>
+        <input id="minLength" type="number" min="1" />
+        <div class="hint">Skip checking text shorter than this.</div>
+
+        <label for="ignoredCategories">Ignored categories</label>
+        <input id="ignoredCategories" type="text" placeholder="STYLE,TYPOGRAPHY" />
+        <div class="hint">Comma-separated LanguageTool category IDs to hide.</div>
+      </section>
+
+      <section id="tab-rephrase" class="panel">
+        <label for="rewriteEndpoint">Rewrite endpoint</label>
+        <input id="rewriteEndpoint" type="text" placeholder="https://languagetool.example.com/llm/v1/chat/completions" />
+        <div class="hint">OpenAI-compatible <code>/v1/chat/completions</code> URL (e.g. your llamafile behind nginx).</div>
+
+        <label for="rewritePrompt">System prompt</label>
+        <textarea id="rewritePrompt" rows="4"></textarea>
+        <div class="hint">Instruction sent with every rephrase. Tune freely — no server restart needed.</div>
+
+        <div class="hint">Tip: select text in any field, then right-click → “✨ Rephrase with LanguageTool Inline” to rephrase just that selection.</div>
+
+        <label for="rephraseVariants" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input id="rephraseVariants" type="checkbox" style="width: auto; margin: 0;" />
+          Offer multiple style options
+        </label>
+        <div class="hint">When on, rephrasing returns several styles to pick from — describe the styles you want in the prompt above.</div>
+      </section>
+
+      <footer>
+        <button id="save">Save</button>
+        <span id="status"></span>
+      </footer>
+
+      <p class="lt-about">
+        Free software under the
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a>.
+        <a href="https://github.com/Oratorian/lt-inline" target="_blank" rel="noopener">Source code</a>.
+      </p>
+    </div>
+
+    <script src="browser-polyfill.min.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

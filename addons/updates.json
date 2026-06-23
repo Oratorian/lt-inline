@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "lt-inline@example.com": {
+      "updates": [
+        {
+          "version": "0.2.2",
+          "update_link": "https://updates.example.com/lt-inline/lt-inline-0.2.2.xpi"
+        }
+      ]
+    }
+  }
+}

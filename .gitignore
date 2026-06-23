@@ -1,0 +1,37 @@
+# --- Secrets (never commit) ---
+.hidden
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+
+# --- Old MV2 extension builds (kept locally as backups, not published) ---
+lt-inline/
+lt-inline-mv2-backup/
+
+# --- Personal helper, superseded by the DevKit PowerShell module ---
+set-dotenv.ps1
+
+# --- Build / packaging outputs ---
+web-ext-artifacts/
+lt-inline-mv3/dist/
+lt-inline-desktop/src-tauri/target/
+node_modules/
+*.xpi
+*.zip
+
+# --- Host-specific / downloaded artifacts ---
+lt-stack/docker-compose.override.yml
+lt-stack/LanguageTool-*/
+lt-stack/ngrams/
+lt-stack/fasttext-src/
+*.gguf
+*.llamafile
+lid.176.bin
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/

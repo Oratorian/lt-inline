@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="panel" class="panel hidden">
+      <div class="head">
+        <span>LanguageTool Inline</span>
+        <button id="close" title="Close">✕</button>
+      </div>
+      <div class="actions">
+        <button class="act" data-act="fix" data-i18n="panel.fix">✓&nbsp; Fix grammar</button>
+        <button class="act" data-act="proofread" data-i18n="panel.proofread">✦&nbsp; AI proofread</button>
+        <button class="act" data-act="rephrase" data-i18n="panel.rephrase">✨&nbsp; Rephrase</button>
+        <button class="act" data-act="variants" data-i18n="panel.variants">🎛&nbsp; Rephrase — styles</button>
+      </div>
+      <div id="result" class="result"></div>
+      <div id="status" class="status"></div>
+      <div id="resize" class="resize" title="Resize"></div>
+    </div>
+
+    <button id="fab" class="fab" title="LanguageTool Inline (Ctrl+Alt+R)">✓</button>
+
+    <script src="i18n.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
