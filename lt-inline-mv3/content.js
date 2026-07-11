@@ -63,6 +63,18 @@
   let selfEdit = null;
   const disabledFields = new WeakSet();
 
+  // In-field pill placement. `side:null` = auto (text-end edge; RTL-aware).
+  // offX/offY are the user's drag nudge relative to the computed anchor. Persisted
+  // globally so a moved/flipped pill stays put across fields and page loads.
+  let place = { side: null, offX: 0, offY: 0 };
+  browser.storage.local.get({ ltPlace: null }).then((c) => {
+    if (c.ltPlace) place = c.ltPlace;
+    positionIcon();
+  });
+  function savePlace() {
+    browser.storage.local.set({ ltPlace: place });
+  }
+
   // ---- contenteditable range mapping (textContent offset -> DOM Range) -----
   function rangeFor(root, start, end) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -214,8 +226,79 @@
     toggle.addEventListener("click", onToggle);
     reph.addEventListener("click", onRephraseField);
     stat.addEventListener("click", onOpenIssues);
+    makeDraggable(stat);
     document.body.appendChild(icon);
     return icon;
+  }
+
+  // The user can drag the count badge to move the pill anywhere, or Alt-click it
+  // to flip which side of the field it anchors to. Both persist globally. A plain
+  // click (no drag) still opens the issues popup.
+  function makeDraggable(handle) {
+    let sx = 0;
+    let sy = 0;
+    let moved = false;
+    handle.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      moved = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      icon.dataset.dragging = "1";
+      try {
+        handle.setPointerCapture(e.pointerId);
+      } catch {}
+    });
+    handle.addEventListener("pointermove", (e) => {
+      if (icon.dataset.dragging !== "1") return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      if (!moved) return;
+      const b = icon.getBoundingClientRect();
+      icon.style.left = "auto";
+      icon.style.right = Math.max(6, window.innerWidth - b.right - dx) + "px";
+      icon.style.top = Math.max(6, Math.min(b.top + dy, window.innerHeight - 32)) + "px";
+      icon.dataset.side = "right"; // free-drag is right-anchored; keep expand consistent
+      sx = e.clientX;
+      sy = e.clientY;
+    });
+    handle.addEventListener("pointerup", (e) => {
+      if (icon.dataset.dragging !== "1") return;
+      icon.dataset.dragging = "0";
+      try {
+        handle.releasePointerCapture(e.pointerId);
+      } catch {}
+      if (!moved || !activeEl) return; // no drag → let the click open issues
+      const r = activeEl.getBoundingClientRect();
+      const b = icon.getBoundingClientRect();
+      place.side = b.left + b.width / 2 < r.left + r.width / 2 ? "left" : "right";
+      const h = icon.offsetHeight || 26;
+      const baseTop = r.height < h + 12 ? r.top + (r.height - h) / 2 : r.bottom - h - 6;
+      place.offY = Math.max(-40, Math.min(b.top - baseTop, 40));
+      place.offX = 0;
+      savePlace();
+      positionIcon();
+    });
+    handle.addEventListener(
+      "click",
+      (e) => {
+        if (moved) {
+          e.stopImmediatePropagation(); // swallow the synthetic post-drag click
+          moved = false;
+          return;
+        }
+        if (!e.altKey) return; // plain click → onOpenIssues (bubble phase)
+        e.stopImmediatePropagation();
+        const rtl = activeEl && getComputedStyle(activeEl).direction === "rtl";
+        const cur = place.side || (rtl ? "left" : "right");
+        place.side = cur === "right" ? "left" : "right";
+        place.offX = 0;
+        savePlace();
+        positionIcon();
+      },
+      true // capture: beat onOpenIssues (bubble listener above)
+    );
   }
   function showIcon() {
     ensureIcon();
@@ -227,15 +310,88 @@
   }
   function positionIcon() {
     if (!icon || !activeEl || icon.style.display === "none") return;
+    if (icon.dataset.dragging === "1") return; // don't fight a live drag
+
     const r = activeEl.getBoundingClientRect();
     const h = icon.offsetHeight || 26;
-    // Anchor the RIGHT edge inside the field's bottom-right corner, so the pill
-    // grows leftward on hover without shifting position.
-    const right = Math.max(6, window.innerWidth - r.right + 6);
-    const top = Math.max(6, Math.min(r.bottom - h - 6, window.innerHeight - h - 6));
-    icon.style.left = "auto";
-    icon.style.right = right + "px";
+    // Collapsed pill width for the geometry. Measure it live, but ONLY while the
+    // pill isn't hovered — mid-hover-transition offsetWidth is an interpolated
+    // value that would make the anchor jitter. Fall back to a sane constant.
+    const hovered = icon.matches(":hover");
+    const COLLAPSED_W = !hovered && icon.offsetWidth ? icon.offsetWidth : 26;
+    const M = 6; // viewport margin
+    const GAP = 4; // gap between field edge and an OUTSIDE pill
+    const VW = window.innerWidth;
+    const VH = window.innerHeight;
+
+    const rtl = getComputedStyle(activeEl).direction === "rtl";
+    // "Short" = the field has no empty vertical band tall enough to hide the pill
+    // in, so an in-corner pill would sit right on the text (the reported bug).
+    const short = r.height < h + 12;
+
+    // ---- vertical ----
+    let top = short
+      ? r.top + (r.height - h) / 2 + place.offY // center on a short field
+      : r.bottom - h - M + place.offY; // bottom-inside on a tall field
+    top = Math.max(M, Math.min(top, VH - h - M));
     icon.style.top = top + "px";
+
+    // ---- horizontal ----
+    // Default text-end side: right for LTR, left for RTL. User preference wins.
+    const preferred = place.side || (rtl ? "left" : "right");
+
+    // Room to place the pill fully OUTSIDE each field edge while staying on-screen.
+    const outsideRightOK = short && VW - r.right - GAP - COLLAPSED_W >= M && r.right < VW - M;
+    const outsideLeftOK = short && r.left - GAP - COLLAPSED_W >= M && r.left > M;
+
+    // On a tall field we keep the original inside-corner placement (bottom-right/
+    // left) — there is genuine empty space there. On a short field we go OUTSIDE
+    // the field. Crucially, when outside won't fit (field flush to the viewport
+    // edge) we fall back to the field's *text-start* edge, NOT the text-end
+    // corner — otherwise we'd re-cover the very text the user was missing.
+    let mode; // "outR" | "outL" | "inR" | "inL"
+    if (!short) {
+      mode = preferred === "left" ? "inL" : "inR";
+    } else if (preferred === "right") {
+      mode = outsideRightOK ? "outR" : outsideLeftOK ? "outL" : "inL";
+    } else {
+      mode = outsideLeftOK ? "outL" : outsideRightOK ? "outR" : "inR";
+    }
+
+    let left = null;
+    let right = null;
+    switch (mode) {
+      case "outR":
+        right = VW - r.right - GAP - COLLAPSED_W;
+        break; // outside the right edge
+      case "outL":
+        left = r.left - GAP - COLLAPSED_W;
+        break; // outside the left edge
+      case "inR":
+        right = VW - r.right + M;
+        break; // inside bottom-right corner (tall)
+      case "inL":
+        left = r.left + M;
+        break; // inside the far/text-start edge (short flush fallback)
+    }
+
+    // Apply the horizontal user nudge in the anchored axis, then clamp on-screen.
+    if (left !== null) {
+      left += place.offX;
+      left = Math.max(M, Math.min(left, VW - COLLAPSED_W - M));
+      icon.style.right = "auto";
+      icon.style.left = left + "px";
+    } else {
+      right -= place.offX;
+      right = Math.max(M, Math.min(right, VW - COLLAPSED_W - M));
+      icon.style.left = "auto";
+      icon.style.right = right + "px";
+    }
+
+    // Hover-expand direction follows the ANCHORED edge so the pill always grows
+    // AWAY from it (badge stays put): left-anchored → reveal rightward (CSS
+    // row-reverse); right-anchored → reveal leftward (default order).
+    icon.dataset.side = left !== null ? "left" : "right";
   }
   function updateIcon() {
     if (!icon) return;
@@ -301,8 +457,13 @@
     let avail; // vertical budget for max-height
     let top;
     if (Math.max(spaceRight, spaceLeft) >= w) {
-      // Side placement: right if it fits (or has more room), else left.
-      const right = spaceRight >= w || spaceRight >= spaceLeft;
+      // Side placement: right if it fits (or has more room), else left. Bias
+      // toward the side the pill actually sits on so the popup stays anchored to
+      // it after a flip/drag/left-fallback.
+      const pillLeft = icon && icon.dataset.side === "left";
+      const right = pillLeft
+        ? spaceRight >= w && spaceLeft < w
+        : spaceRight >= w || spaceRight >= spaceLeft;
       left = right ? r.right + GAP : r.left - GAP - w;
       avail = window.innerHeight - 2 * MARGIN;
       popup.style.maxHeight = avail + "px";
@@ -573,6 +734,7 @@
     (e) => {
       if (e.target !== activeEl) return;
       clearUnderlines(); // drop stale underlines while typing; they return after the check
+      positionIcon(); // re-anchor as textareas / contenteditables auto-grow
       scheduleCheck();
     },
     true

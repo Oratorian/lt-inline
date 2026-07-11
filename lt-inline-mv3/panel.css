@@ -58,20 +58,45 @@
   background: #3a3d42;
 }
 
-/* Collapsed by default — only the count badge shows. Hover expands the pill. */
+/* Collapsed by default — only the count badge shows. Hover expands the pill.
+   NOTE: box-sizing is border-box, so the 4px side padding would floor the
+   collapsed width at 8px per button (making the "collapsed" pill 44px, not 26px,
+   and throwing off positionIcon()'s outside-placement math). Collapse the padding
+   too so a collapsed pill is genuinely just the badge (~26px). */
 .lt-icon .lt-toggle,
 .lt-icon .lt-reph {
   width: 0;
+  padding: 0;
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
-  transition: width 0.14s ease, opacity 0.14s ease;
+  transition: width 0.14s ease, padding 0.14s ease, opacity 0.14s ease;
 }
 .lt-icon:hover .lt-toggle,
 .lt-icon:hover .lt-reph {
   width: 22px;
+  padding: 0;
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Left-anchored pill (RTL / user-flipped / flush-edge fallback): keep the count
+   badge on the stable LEFT edge and reveal Toggle/Rephrase rightward, so the pill
+   always grows AWAY from its anchored edge. The width transition above is
+   unchanged; row-reverse only redirects the growth. */
+.lt-icon[data-side="left"] {
+  flex-direction: row-reverse;
+}
+
+/* Drag affordances on the badge: it's a handle you can grab to move the pill. */
+.lt-icon {
+  touch-action: none; /* let pointer drag work on touch instead of scrolling */
+}
+.lt-icon .lt-stat {
+  cursor: grab;
+}
+.lt-icon[data-dragging="1"] .lt-stat {
+  cursor: grabbing;
 }
 .lt-icon .lt-count {
   font-weight: 700;
