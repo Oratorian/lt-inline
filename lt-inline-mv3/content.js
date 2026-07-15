@@ -169,12 +169,16 @@
 
   // ---- underlines ----------------------------------------------------------
   function clearUnderlines() {
+    removeOverlay(); // form-field overlay (no-op if none)
     if (!supportsHighlight) return;
     hlMajor.clear();
     hlMinor.clear();
     hlAI.clear();
   }
   function renderUnderlines() {
+    // Form fields (input/textarea) use the mirror overlay; contenteditable uses
+    // the native Highlight API below.
+    renderOverlay();
     if (!supportsHighlight) return;
     hlMajor.clear();
     hlMinor.clear();
@@ -190,6 +194,101 @@
       if (!r) continue;
       hlAI.add(r);
     }
+  }
+
+  // ---- textarea / input underline overlay ----------------------------------
+  // The CSS Custom Highlight API can only decorate DOM text nodes, so it can't
+  // touch text inside <input>/<textarea> (their text lives in native, unreachable
+  // internals). To underline errors there we mirror the field into a transparent
+  // <div> positioned exactly over it: same text, same metrics, same scroll, with
+  // the error ranges wrapped in <span>s that carry the wavy underline. Only the
+  // underlines show through; the mirror's own text is transparent.
+  let overlay = null;
+  let overlayEl = null; // the field the overlay currently mirrors
+
+  // Typographic + box properties the mirror must copy so its wrapped text lands
+  // exactly under the real text. Anything affecting glyph advance or line breaks.
+  const MIRROR_PROPS = [
+    "boxSizing", "width", "height",
+    "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
+    "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
+    "fontFamily", "fontSize", "fontWeight", "fontStyle", "fontVariant",
+    "fontStretch", "letterSpacing", "wordSpacing", "lineHeight", "textIndent",
+    "textTransform", "textAlign", "direction", "tabSize",
+  ];
+
+  function ensureOverlay() {
+    if (overlay) return overlay;
+    overlay = document.createElement("div");
+    overlay.className = "lt-underlay";
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+  function removeOverlay() {
+    if (overlay) {
+      overlay.remove();
+      overlay = null;
+    }
+    overlayEl = null;
+  }
+  // Wrap error ranges in the field's text with underline spans. Sorted,
+  // non-overlapping segmentation so a char is never double-wrapped (a major/AI
+  // overlap just takes the first). Returns a DocumentFragment.
+  function buildUnderlineFragment(text) {
+    const spans = [];
+    for (const m of currentMatches) {
+      spans.push({ start: m.offset, end: m.offset + m.length, cls: severityOf(m) });
+    }
+    for (const m of aiMatches) {
+      spans.push({ start: m.offset, end: m.offset + m.length, cls: "ai" });
+    }
+    spans.sort((a, b) => a.start - b.start);
+    const frag = document.createDocumentFragment();
+    let pos = 0;
+    for (const s of spans) {
+      const start = Math.max(s.start, pos);
+      const end = Math.min(s.end, text.length);
+      if (end <= start) continue; // skip empties / overlaps already covered
+      if (start > pos) frag.appendChild(document.createTextNode(text.slice(pos, start)));
+      const span = document.createElement("span");
+      span.className = "lt-ul lt-ul-" + s.cls;
+      span.textContent = text.slice(start, end);
+      frag.appendChild(span);
+      pos = end;
+    }
+    if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
+    return frag;
+  }
+  function renderOverlay() {
+    if (!activeEl || activeEl.isContentEditable || disabledFields.has(activeEl)) {
+      removeOverlay();
+      return;
+    }
+    const hasMatches = currentMatches.length || aiMatches.length;
+    if (!hasMatches) {
+      removeOverlay();
+      return;
+    }
+    const ov = ensureOverlay();
+    overlayEl = activeEl;
+    // Single-line inputs never wrap; textareas wrap like pre-wrap.
+    const multiline = activeEl.tagName === "TEXTAREA";
+    ov.style.whiteSpace = multiline ? "pre-wrap" : "pre";
+    ov.style.overflowWrap = multiline ? "break-word" : "normal";
+    ov.textContent = "";
+    ov.appendChild(buildUnderlineFragment(getText(activeEl)));
+    positionOverlay();
+  }
+  function positionOverlay() {
+    if (!overlay || !overlayEl || overlayEl !== activeEl) return;
+    const cs = getComputedStyle(activeEl);
+    for (const p of MIRROR_PROPS) overlay.style[p] = cs[p];
+    const r = activeEl.getBoundingClientRect();
+    overlay.style.left = r.left + "px";
+    overlay.style.top = r.top + "px";
+    // Mirror the field's internal scroll so wrapped lines stay aligned.
+    overlay.scrollTop = activeEl.scrollTop;
+    overlay.scrollLeft = activeEl.scrollLeft;
   }
 
   // ---- in-field icon -------------------------------------------------------
@@ -747,6 +846,7 @@
     () => {
       positionIcon();
       positionPopup();
+      positionOverlay(); // keep the form-field underline mirror aligned
       hideChooser();
     },
     true
@@ -754,6 +854,7 @@
   window.addEventListener("resize", () => {
     positionIcon();
     positionPopup();
+    positionOverlay();
   });
 
   // ---- selection rephrase (right-click menu) -------------------------------

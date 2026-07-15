@@ -23,6 +23,41 @@
   text-underline-offset: 2px;
 }
 
+/* ---- Textarea / input underline overlay (mirror div) ------------------
+   The Highlight API can't reach text inside form controls, so we mirror the
+   field into a transparent div sitting exactly over it and underline the error
+   ranges there. Only the wavy underlines show; the mirror's text is invisible
+   and the whole layer ignores the pointer so the real field stays interactive. */
+.lt-underlay {
+  position: fixed;
+  z-index: 2147483645; /* under the pill (…646) and popup, over the page */
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  background: transparent;
+  -webkit-text-fill-color: transparent;
+  /* border must be transparent, not zero: it occupies the same box the copied
+     borderWidth reserves, so text metrics line up with the real field. */
+  border-style: solid;
+  border-color: transparent;
+}
+.lt-underlay .lt-ul {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.lt-underlay .lt-ul-major {
+  text-decoration-color: #e0352b;
+}
+.lt-underlay .lt-ul-minor {
+  text-decoration-color: #e0a106;
+}
+.lt-underlay .lt-ul-ai {
+  text-decoration-color: #3b9dff;
+}
+
 /* Shared dark palette for the overlay UI. */
 /* bg #26282d · border #3a3d42 · text #e9e9ec · muted #a1a6af */
 
