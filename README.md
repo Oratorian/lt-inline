@@ -26,7 +26,7 @@ the [test endpoint](#try-it-without-a-backend).)
 
 | Browser | Install from | Status |
 |---|---|---|
-| 🦊 **Firefox** | [Direct `.xpi` (AMO-signed)](https://addons.mozilla.org/firefox/downloads/file/4900693/lt_inline-0.3.0.xpi) | ✅ Available — v0.2.4, **auto-updates** |
+| 🦊 **Firefox** | [Direct `.xpi` (AMO-signed)](https://addons.mozilla.org/firefox/downloads/file/4900747/lt_inline-0.3.2.xpi) | ✅ Available — v0.3.2, **auto-updates** |
 | 🔵 **Edge** | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/languagetool-inline/mgfpafikilobfaeaccnkfaknkmmfdkik) | ✅ Available — auto-updates |
 | 🔴 **Opera** | [Opera Add-ons](https://addons.opera.com/extensions/details/e3d4b572e916c6add8dbb23dcfe68c7d9fdeeec2/) | ✅ Available — auto-updates |
 | 🟢 **Chrome** | Chrome Web Store | ❌ Canceled, use Edge version same Manifest. |

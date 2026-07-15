@@ -66,12 +66,28 @@ function New-ChromiumManifest($destDir) {
     $m | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $destDir 'manifest.json') -Encoding utf8
 }
 
+# Self-hosted Firefox update URL. Kept OUT of the repo (source manifest.json is
+# store-neutral): read from the FF_UPDATE_URL environment variable so the private
+# update-server hostname never lands in version control. Load it however you load
+# your other secrets, e.g. `Import-Module DevKit; dotenv ./.hidden`. If it isn't
+# set, the Firefox build is produced WITHOUT update_url (a valid AMO/store-style
+# build with no self-update) and a warning is printed — we never hardcode a URL.
+$FirefoxUpdateUrl = [Environment]::GetEnvironmentVariable('FF_UPDATE_URL')
+
 # Firefox MV3 uses an event page, NOT a service worker: background.scripts (an
 # array), with the polyfill loaded as the first entry (background.js's
-# importScripts guard then no-ops). Keeps the gecko block.
+# importScripts guard then no-ops). Keeps the gecko block and injects update_url.
 function New-FirefoxManifest($destDir) {
     $m = Get-Content (Join-Path $src 'manifest.json') -Raw | ConvertFrom-Json
     $m.background = [pscustomobject]@{ scripts = @('browser-polyfill.min.js', 'background.js') }
+    # Inject update_url into the gecko block for the self-hosted auto-update flow.
+    # Add-Member -Force overwrites it if a stray copy is ever left in source.
+    if ($FirefoxUpdateUrl) {
+        $gecko = $m.browser_specific_settings.gecko
+        $gecko | Add-Member -NotePropertyName 'update_url' -NotePropertyValue $FirefoxUpdateUrl -Force
+    } else {
+        Write-Warning "FF_UPDATE_URL not set - Firefox build will have NO update_url (no self-update). Load it (e.g. dotenv ./.hidden) before building the release .xpi."
+    }
     $m | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $destDir 'manifest.json') -Encoding utf8
 }
 

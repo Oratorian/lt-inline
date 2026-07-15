@@ -7,7 +7,6 @@
     "gecko": {
       "id": "lt-inline@example.com",
       "strict_min_version": "142.0",
-      "update_url": "https://updates.example.com/addons/updates.json",
       "data_collection_permissions": {
         "required": ["websiteContent"]
       }
