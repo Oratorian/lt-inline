@@ -91,17 +91,17 @@ mixed-content blocking). Throughout the docs, replace `<your-host>` with your ow
 
 ### Try it without a backend
 
-To evaluate the clients before self-hosting, you can point them at a public test
-server run by the maintainer:
-
-- Grammar: `https://lang.mahesvara.cloud/v2/check`
-- Rephrase / AI proofread: `https://lang.mahesvara.cloud/llm/v1/chat/completions`
-
-> ⚠️ **For testing only.** Text you check is sent to a server operated by the
-> maintainer, not to your own machine — so this is **not private** and may be
-> rate-limited or taken down at any time. Do **not** use it for sensitive or
-> production content. **Self-host** (above) for the privacy this project is built
-> for.
+> ⚠️ **The public test endpoints have been retired.**
+>
+> - Grammar: `retired`
+> - Rephrase / AI proofread: `retired`
+>
+> They existed so you could try the clients before setting up your own server.
+> Not fraud, not misuse — someone just decided to get clever and route around the
+> limits that kept them running, so they're gone.
+>
+> **Self-host** (see above). That's what this project is built for, and it's the
+> only setup where your text stays on your own machine.
 
 ---
 
